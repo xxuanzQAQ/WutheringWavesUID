@@ -1,4 +1,41 @@
 {
+"领养小岸bot功能": {
+   "desc": "本条均为bot主人自行添加，与插件和框架作者无关",
+   "data": [
+      {
+	"name": "领养小岸",
+	"desc": "领养小岸",
+	"eg": "领养小岸",
+	"need_ck":false,
+	"need_sk":false,
+	"need_admin": true
+      },
+      {
+	"name": "小岸续费",
+	"desc": "小岸续费",
+	"eg": "小岸续费",
+	"need_ck": false,
+	"need_sk": false,
+	"need_admin": false
+      },
+      {
+	 "name": "小岸到期时间",
+	 "desc": "小岸到期时间",
+	 "eg": "小岸状态",
+	 "need_ck": false,
+	 "need_sk": false,
+	 "need_admin": false
+      },
+      {
+	 "name": "代肝",
+	 "desc": "代肝",
+	 "eg": "代肝",
+	 "need_ck": false,
+	 "need_sk": false,
+	 "need_admin": false
+      }
+    ]
+  },
   "绑定账号": {
     "desc": "在执行查询之前请绑定账号",
     "data": [

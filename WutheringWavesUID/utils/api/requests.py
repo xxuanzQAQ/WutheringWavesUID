@@ -74,9 +74,7 @@ from .api import (
     get_local_proxy_url,
     get_need_proxy_func,
 )
-from .captcha import get_solver
-from .captcha.base import CaptchaResult
-from .captcha.errors import CaptchaError
+from .gt_solver import CaptchaError, GeeTestSolver
 
 
 async def _check_response(
@@ -230,9 +228,7 @@ class WavesApi:
     bat_map = {}
 
     def __init__(self):
-        self.captcha_solver = get_solver()
-        if self.captcha_solver:
-            logger.success(f"使用过码器: {self.captcha_solver.get_name()}")
+        self.captcha_solver = GeeTestSolver()
 
     def is_net(self, roleId):
         _temp = int(roleId)
@@ -986,8 +982,6 @@ class WavesApi:
                 return raw_data
 
         async def solve_captcha():
-            if not self.captcha_solver:
-                return
             for _ in range(max_retries):
                 try:
                     return await self.captcha_solver.solve()
@@ -1004,31 +998,23 @@ class WavesApi:
                     response = await do_request(data, client)
 
                     res_data = response.get("data", {})
-                    if (
-                        self.captcha_solver
-                        and isinstance(res_data, dict)
-                        and res_data.get("geeTest") is True
-                    ):
+                    if isinstance(res_data, dict) and res_data.get("geeTest") is True:
                         seccode_data = await solve_captcha()
-                        if isinstance(seccode_data, CaptchaResult):
-                            seccode_data = seccode_data.model_dump_json()
 
-                        if isinstance(seccode_data, dict):
-                            seccode_data = json.dumps(seccode_data)
-
-                        # 重试数据准备
+                        # 简化后的重试数据准备
                         retry_data = data.copy() if data else {}
-                        retry_data["geeTestData"] = seccode_data
+                        retry_data["geeTestData"] = json.dumps(seccode_data)
+
                         return await do_request(retry_data, client)
 
                     return response
 
             except aiohttp.ClientError as e:
-                logger.warning(f"url:[{url}] 网络请求失败, 尝试次数 {attempt + 1}", e)
+                logger.exception(f"url:[{url}] 网络请求失败, 尝试次数 {attempt + 1}", e)
                 if attempt < max_retries - 1:
                     await asyncio.sleep(retry_delay)
             except Exception as e:
-                logger.warning(f"url:[{url}] 发生未知错误, 尝试次数 {attempt + 1}", e)
+                logger.exception(f"url:[{url}] 发生未知错误, 尝试次数 {attempt + 1}", e)
                 return {"code": WAVES_CODE_999, "data": f"请求时发生未知错误: {e}"}
 
         return {"code": WAVES_CODE_999, "data": "请求服务器失败，已达最大重试次数"}
